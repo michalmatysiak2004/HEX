@@ -1,0 +1,440 @@
+#include <stdio.h>
+#include <iostream>
+#define MAX_SIZE 150
+using namespace std;
+
+struct arguments {
+    int size=0;
+    int pawns=0;
+    int red=0;
+    int blue=0;
+    int command=0;
+    bool pole=0;
+    char helptab[MAX_SIZE];
+    bool ispoleempty=true;
+    int counter=0;
+    int lines=0;
+    char map[22][22];
+    char mapcopy[22][22];
+    bool isgameover=false;
+    char winner;
+    int inputcounter=0;
+    bool isboardpossible;
+};
+
+void clearmap(struct arguments* a) {
+    for (int i = 0; i < a->size; i++) {
+        for (int j = 0; j < a->size; j++) {
+            a->map[i][j] = '-';
+        }
+    }
+}
+void clearhelptab(struct arguments* a) {
+    for (int i = 0; i < a->counter; i++) {
+        a->helptab[i] = '-';
+    }
+}
+void move(struct arguments* a, int y, int x , char color){
+
+    int y1, x1;
+    a->map[y][x]='-';
+    //ruch w gore
+    if(color=='r' && x==a->size-1){
+        a->isgameover=true;
+        a->winner='r';
+    }
+    if(color=='b' && y==a->size-1){
+
+        a->isgameover=true;
+        a->winner='b';
+    }
+    y1=y-1;
+    x1=x-1;
+
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]==color ){
+            //cout << "ruch w gore" << endl;
+            move(a,y1,x1,color);
+
+        }
+
+    }
+    //ruch w lewogora
+
+    y1=y;
+    x1=x-1;
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]==color){
+            //cout << "ruch w lewogora" << endl;
+            move(a,y1,x1,color);
+
+        }
+
+    }
+    //ruch w lewodol
+    y1=y+1;
+    x1=x;
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]== color){
+            // cout << "ruch w lewodol" << endl;
+            move(a,y1,x1,color);
+
+        }
+    }
+    //ruch w prawogora
+    y1=y-1;
+    x1=x;
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]==color){
+            // cout << "ruch w prawogora" << endl;
+            move(a,y1,x1,color);
+
+        }
+    }
+    //ruch w prawodol
+    y1=y;
+    x1=x+1;
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]==color){
+            // cout << "ruch w prawodol" << endl;
+            move(a,y1,x1,color);
+
+        }
+    }
+    //ruch w dol
+    y1=y+1;
+    x1=x+1;
+    if(x1>=0 && y1>=0 && x1<a->size && y1<a->size){
+        if(a->map[y1][x1]==color){
+            // cout << "ruch w dol" << endl;
+            move(a,y1,x1,color);
+
+        }
+    }
+
+}
+
+void checkbluewall(struct arguments* a) {
+    for (int i = 0; i < a->size; i++){
+        if(a->map[0][i]=='b') move(a,0,i,'b');
+
+    }
+
+
+};
+void checkredwall(struct arguments* a) {
+    for (int i = 0; i < a->size; i++){
+        if(a->map[i][0]=='r') move(a,i,0,'r');
+
+    }
+    //cout << "redend" << endl;
+};
+void copymap(struct arguments* a){
+    for (int i = 0; i < a->size; i++) {
+        for (int j = 0; j < a->size; j++) {
+            a->mapcopy[i][j] = a->map[i][j];
+        }
+    }
+}
+void reversecopymap(struct arguments* a){
+    for (int i = 0; i < a->size; i++) {
+        for (int j = 0; j < a->size; j++) {
+            a->map[i][j] = a->mapcopy[i][j];
+        }
+    }
+}
+void printmap(struct arguments* a) {
+    cout << "MAPA o rozmiarze :";
+    cout << a->size << " nr " << a->inputcounter << endl;
+    cout << "helptab";
+    for (int i = 0; i < a->counter; i++) {
+        cout << a->helptab[i];
+    }
+    cout << endl;
+    for (int i = 0; i < a->size; i++) {
+        for (int j = 0; j < a->size; j++) {
+            cout << a->map[i][j];
+        }
+        cout << endl;
+    }
+}
+void createmap(struct arguments* a) {
+
+    int x,y;
+    int currentline=0;
+    int j=0;
+    while (currentline!=a->size) {
+        y=currentline;
+        x=0;
+        for(int i=0;i<=currentline;i++){
+            a->map[y][x]=a->helptab[j];
+            x++;
+            y--;
+            j++;
+        }
+        currentline++;
+    }
+
+    currentline = 2*(a->size)-2;
+
+    int counter=1;
+    j=(a->size)*(a->size)-1;
+    while (currentline!=a->size-1) {
+        y=a->size-counter;
+        x=a->size-1;
+        for(int i=0;i<counter;i++){
+            a->map[y][x]=a->helptab[j];
+            x--;
+            y++;
+            j--;
+        }
+        currentline--;
+        counter++;
+    }
+}
+bool isboardpossible(struct arguments* a){
+    if ((a->red - a->blue) >= 0 && (a->red - a->blue) <= 1){
+
+        checkredwall(a);
+        checkbluewall(a);
+        reversecopymap(a); // przywracamy mapę do stanu początkowego
+        if(a->isgameover==false) {
+
+            return true;
+        }
+
+        else {
+
+            if(a->winner=='r' && a->red!=a->blue+1) return false;
+            else if(a->winner=='b' && a->blue!=a->red) return false;
+            else if(a->winner=='r'){
+                for(int i = 0; i<a->size; i++){
+                    for(int j = 0; j<a->size; j++){
+                        if(a->map[i][j]=='r') {
+                            a->map[i][j]='-';
+                            a->isgameover=false;
+                            checkredwall(a);
+                            checkbluewall(a);
+                            if(a->isgameover==false) return true;
+                            reversecopymap(a);
+                        };
+                    }
+                }
+            }
+            else if(a->winner=='b'){
+                for(int i = 0; i<a->size; i++){
+                    for(int j = 0; j<a->size; j++){
+                        if(a->map[i][j]=='b') {
+                            a->map[i][j]='-';
+                            a->isgameover=false;
+                            checkredwall(a);
+                            checkbluewall(a);
+                            if(a->isgameover==false) return true;
+                            reversecopymap(a);
+                        };
+                    }
+                }
+            }
+        }
+
+
+    }
+    return false;
+}
+
+
+void printresult(int x, struct arguments* a) {
+    switch (x) {
+        case 1:
+
+            a->size = (a->lines-1)/2;
+            cout << a->size << endl;
+            break;
+        case 2:
+            cout << a->pawns << endl;
+            break;
+        case 3:
+            if ((a->red - a->blue) >= 0 && (a->red - a->blue) <= 1) {
+                cout << "YES" << endl;
+            } else
+                cout << "NO" << endl;
+            break;
+        case 4:
+            if(a->isgameover==true){
+
+                cout << "YES ";
+                if(a->winner=='r') cout << "RED" << endl;
+                else cout << "BLUE" << endl;
+            }
+            else{
+                cout << "NO" << endl;
+            }
+            break;
+        case 5:
+            cout << a->inputcounter << " ";
+            a->inputcounter++;
+            if(a->isboardpossible==true) cout << "YES" << endl;
+            else cout << "NO" << endl;
+            break;
+    }
+}
+void resetparameters(struct arguments* a){
+    clearmap(a);
+    clearhelptab(a);
+    a->blue = 0;
+    a->red = 0;
+    a->counter = 0;
+    a->ispoleempty = true;
+    a->pawns = 0;
+    a->lines= 0;
+    a->size= 0 ;
+    a->isgameover=false;
+
+
+}
+void functionhandler(char token, struct arguments* a) {
+
+    char ch;
+    a->size = (a->lines-1)/2;
+
+    if (token == 'B') {
+        cin >> ch;
+        while(ch != 'E') {
+            cin >> ch;
+        }
+        scanf("%c", &ch);
+        printresult(1, a);
+        resetparameters(a);
+    }
+    if (token == 'P') {
+        cin >> ch;
+        while (ch != 'R'){
+            cin >> ch;
+        }
+        scanf("%c", &ch);
+        printresult(2, a);
+        resetparameters(a);
+    }
+    if (token == 'I') {
+        cin >> ch;
+        cin >> ch;
+        cin >> ch;
+        if(ch == 'B'){
+            while (ch != '_'){
+                cin >> ch;
+            }
+            cin >> ch;
+            if(ch=='C'){ // IS_BOARD_CORRECT
+                while (ch != 'T'){
+                    cin >> ch;
+                }
+                scanf("%c", &ch);
+                printresult(3, a);
+                resetparameters(a);
+
+            }
+            else if(ch=='P'){ // IS_BOARD_POSSIBLE
+                while (ch != 'E'){
+                    cin >> ch;
+                }
+                scanf("%c", &ch);
+                createmap(a);
+                copymap(a);
+
+                a->isboardpossible=isboardpossible(a);
+                printresult(5, a);
+                resetparameters(a);
+            }
+
+        }
+        else if(ch=='G')
+        {   // IS_GAME_OVER
+            while(ch != 'R') {
+                cin >> ch;
+            }
+            scanf("%c", &ch);
+
+            if ((a->red - a->blue) >= 0 && (a->red - a->blue) <= 1){
+
+                createmap(a);
+                checkredwall(a);
+                checkbluewall(a);
+
+
+            }
+            printresult(4,a);
+            resetparameters(a);
+            a->inputcounter++;
+
+
+        }
+
+
+    }
+}
+
+int main() {
+    char ch;
+    arguments a;
+    // Wczytywanie znaków z wejścia
+    /*while (scanf("%c", &ch) == 1) {
+
+        if (ch == '\n') {
+            a.lines++;
+        } else if (ch == '<')
+            a.pole = true;
+        else if (ch == '>' && a.ispoleempty == true) {
+            a.helptab[a.counter] = '-';
+            a.counter++;
+        } else if (ch == '>' && a.ispoleempty == false) {
+            a.ispoleempty = true;
+            a.pole = false;
+        } else if (ch == 'b' || ch == 'r') {
+            a.helptab[a.counter] = ch;
+            a.ispoleempty = false;
+            a.pawns++;
+
+            if (ch == 'b')
+                a.blue++;
+            if (ch == 'r')
+                a.red++;
+            a.counter++;
+        } else if (ch == 'B' || ch == 'I' || ch == 'P' ){
+
+            functionhandler(ch, &a);
+        } else {
+        }
+
+    }*/
+    while ((ch = getchar()) != EOF) {
+        if (ch == '\n') {
+            a.lines++;
+        } else if (ch == '<') {
+            a.pole = true;
+        } else if (ch == '>' && a.ispoleempty == true) {
+
+            a.helptab[a.counter] = '-';
+            a.counter++;
+        } else if (ch == '>' && a.ispoleempty == false) {
+            a.ispoleempty = true;
+            a.pole = false;
+        } else if (ch == 'b' || ch == 'r') {
+            a.helptab[a.counter] = ch;
+            a.ispoleempty = false;
+            a.pawns++;
+
+            if (ch == 'b')
+                a.blue++;
+            if (ch == 'r')
+                a.red++;
+            a.counter++;
+        } else if (ch == 'B' || ch == 'I' || ch == 'P' ){
+
+            functionhandler(ch, &a);
+        } else {
+            // Obsługa innych znaków
+        }
+    }
+
+    return 0;
+}
